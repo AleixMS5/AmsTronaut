@@ -62,13 +62,8 @@ export default class Scena2 extends Phaser.Scene {
                  } else {
                      // Si no quedan vidas, muestra "Game Over" y desactiva el objeto peligroso
                      vidasText.setText('GAME OVER');
-                     this.physics.pause();
-                     let restartButton = this.add.text(400, 400, 'Reiniciar', { fontSize: '32px', fill: '#fff' });
-                     restartButton.setOrigin(0.5);
-                     restartButton.setInteractive();
-                     restartButton.on('pointerdown', () => {
-                         window.location.reload()
-                     });
+
+                     this.scene.start('GameOver');
                      objetoPeligroso.disableBody(true, true);
                  }
 
@@ -165,10 +160,10 @@ export default class Scena2 extends Phaser.Scene {
 
 
     update(time, delta) {
-        // if (player.y > 600) {
-        //     player.y= 500
-        //     perderVida();
-        // }
+        if (player.y > 600) {
+            player.y= 500
+            perderVida();
+        }
         if (cursors.left.isDown)
         {
             player.body.setVelocityX(-200);

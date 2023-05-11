@@ -11,3 +11,14 @@ export class PlayButton extends Button {
     }
 
 }
+
+export class relaoadButton extends Button {
+    constructor(scene) {
+        super(scene, 'playbutton', 540, 450);
+    }
+
+    doClick() {
+       window.location.reload()
+    }
+
+}

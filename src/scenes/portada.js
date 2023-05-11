@@ -30,7 +30,7 @@ export default class Portada extends Phaser.Scene
         this.githubVal = this.add.image(95,460,'github').setInteractive();
         this.githubVal.setScale(0.39);
         this.githubVal.on('pointerdown', () => {
-            var s = window.open('https://github.com/Palanka777/jocPhaser.git', '_blank');
+            var s = window.open('https://github.com/AleixMS5/AmsTronaut', '_blank');
             s.focus();
         });
 

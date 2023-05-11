@@ -13,6 +13,12 @@ let objetoPeligroso
 let perderVida
 let puerta
 let next
+let sonido
+let sonidomorir
+let musica
+let invertedireccion
+let initialPosition
+let movingRight = true;
 export default class ScenaB extends Phaser.Scene {
 
     constructor ()
@@ -21,6 +27,9 @@ export default class ScenaB extends Phaser.Scene {
 
     }
     preload () {
+        this.load.audio('sonido', './src/assets/curarse.mp3');
+        this.load.audio('sonidomorir', './src/assets/morirse.mp3');
+        this.load.audio('musica', './src/assets/iamsamelea-Aliens in Tokyo.wav');
         // map made with Tiled in JSON format
         this.load.tilemapTiledJSON('map', './src/assets/map.json');
         // tiles in spritesheet
@@ -36,47 +45,75 @@ export default class ScenaB extends Phaser.Scene {
 
      create() {
 
+         sonido = this.sound.add('sonido');
+         sonidomorir = this.sound.add('sonidomorir');
+
+         musica = this.sound.add('musica');
+         musica.play()
          puerta = this.physics.add.sprite(2050, 200, 'puerta');
          puerta.setCollideWorldBounds(true);
          puerta.setBounce(0.2); // our player will bounce from items
          puerta.body.setSize(puerta.width, puerta.height-8);
          next = () => {
+             musica.stop()
              this.scene.start('Scena2');
          }
          perderVida = () => {
-             // Desactiva la detección de colisiones temporalmente
-             player.setTint(0xff0000);
-             this.physics.pause();
+             if (player.y+50 < objetoPeligroso.y) {
+                 objetoPeligroso.disableBody(true, true);
+             }else {
+                 // Desactiva la detección de colisiones temporalmente
+                 musica.stop()
+                 player.setTint(0xff0000);
+                 this.physics.pause();
+                 sonidomorir.play()
+                 var timeline = this.tweens.createTimeline();
 
-             setTimeout(() => {
-                 player.clearTint();
-                 // Resta una vida y actualiza el texto
-                 vidas--;
-                 vidasText.setText('Vidas: ' + vidas);
+                 // Agrega dos tweens a la animación para sacudir la pantalla
+                 timeline.add({
+                     targets: this.cameras.main,
+                     x: '-=10',
+                     yoyo: true,
+                     duration: 5,
+                     ease: 'Power2',
+                     repeat: 4
+                 });
+                 timeline.add({
+                     targets: this.cameras.main,
+                     x: '+=10',
+                     yoyo: true,
+                     duration: 5,
+                     ease: 'Power2',
+                     repeat: 4
+                 });
 
-                 // Comprueba si el jugador todavía tiene vidas
-                 if (vidas > 0) {
-                     // Si todavía hay vidas, reinicia la escena
-                     this.scene.restart();
-                     score=0;
-                 } else {
-                     // Si no quedan vidas, muestra "Game Over" y desactiva el objeto peligroso
-                     vidasText.setText('GAME OVER');
-
-                     let restartButton = this.add.text(400, 400, 'Reiniciar', { fontSize: '32px', fill: '#fff' });
-                     restartButton.setOrigin(0.5);
-                     restartButton.setInteractive();
-                     restartButton.on('pointerdown', () => {
-                         window.location.reload()
-                     });
-                     objetoPeligroso.disableBody(true, true);
-                 }
-
-                 // Reactiva la detección de colisiones después de un corto retraso
+                 // Inicia la animación de sacudida
+                 timeline.play();
                  setTimeout(() => {
-                     this.physics.resume();
+                     player.clearTint();
+                     // Resta una vida y actualiza el texto
+                     vidas--;
+                     vidasText.setText('Vidas: ' + vidas);
+
+                     // Comprueba si el jugador todavía tiene vidas
+                     if (vidas > 0) {
+                         // Si todavía hay vidas, reinicia la escena
+                         this.scene.restart();
+                         score = 0;
+                     } else {
+                         // Si no quedan vidas, muestra "Game Over" y desactiva el objeto peligroso
+                         vidasText.setText('GAME OVER');
+
+                         this.scene.start('GameOver');
+                         objetoPeligroso.disableBody(true, true);
+                     }
+
+                     // Reactiva la detección de colisiones después de un corto retraso
+                     setTimeout(() => {
+                         this.physics.resume();
+                     }, 1000);
                  }, 1000);
-             }, 1000);
+             }
          }
         // load the map
         map = this.make.tilemap({key: 'map'});
@@ -107,6 +144,8 @@ export default class ScenaB extends Phaser.Scene {
         player = this.physics.add.sprite(200, 200, 'player');
         player.setBounce(0.2); // our player will bounce from items
         player.setCollideWorldBounds(true); // don't go out of the map
+         objetoPeligroso.setVelocityX(-100);
+
 
         // small fix to our player images, we resize the physics body object slightly
         player.body.setSize(player.width, player.height-8);
@@ -121,6 +160,8 @@ export default class ScenaB extends Phaser.Scene {
         this.physics.add.overlap(player, coinLayer);
          this.physics.add.overlap(player, objetoPeligroso, perderVida, null, this);
          this.physics.add.overlap(player, puerta, next, null, this);
+
+
         // player walk animation
         this.anims.create({
             key: 'walk',
@@ -150,7 +191,7 @@ export default class ScenaB extends Phaser.Scene {
         this.cameras.main.startFollow(player);
 
         // set background color, so the sky is not black
-        this.cameras.main.setBackgroundColor('#ccccff');
+        this.cameras.main.setBackgroundColor('#12345D');
 
         // this text will show the score
         text = this.add.text(20, 570, '0', {
@@ -160,14 +201,16 @@ export default class ScenaB extends Phaser.Scene {
         // fix the text to the camera
         text.setScrollFactor(0);
          vidasText.setScrollFactor(0);
+         initialPosition = objetoPeligroso.x;
     }
 
 
     update(time, delta) {
-        // if (player.y > 600) {
-        //     player.y= 500
-        //     perderVida();
-        // }
+
+        if (player.y > 600) {
+            player.y= 500
+            perderVida();
+        }
         if (cursors.left.isDown)
         {
             player.body.setVelocityX(-200);
@@ -188,15 +231,29 @@ export default class ScenaB extends Phaser.Scene {
         {
             player.body.setVelocityY(-500);
         }
+        if (objetoPeligroso.x < initialPosition + 50 && !movingRight) {
+            objetoPeligroso.setVelocityX(100);
+        } else {
+            movingRight = true;
+        }
+
+        if (objetoPeligroso.x > initialPosition - 50 && movingRight) {
+            objetoPeligroso.setVelocityX(-100);
+        } else {
+            movingRight = false;
+        }
     }
 
 }
 function collectCoin(sprite, tile) {
+    sonido.play();
     coinLayer.removeTileAt(tile.x, tile.y); // remove the tile/coin
     score++; // add 10 points to the score
     text.setText(score); // set the text to show the current score
     return false;
 }
+
+
 
 
 
