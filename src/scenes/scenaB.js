@@ -29,7 +29,7 @@ export default class ScenaB extends Phaser.Scene {
     preload () {
         this.load.audio('sonido', './src/assets/curarse.mp3');
         this.load.audio('sonidomorir', './src/assets/morirse.mp3');
-        this.load.audio('musica', './src/assets/iamsamelea-Aliens in Tokyo.wav');
+        this.load.audio('musica', './src/assets/iamsamelea-Aliens-in-Tokyo.mp3');
         // map made with Tiled in JSON format
         this.load.tilemapTiledJSON('map', './src/assets/map.json');
         // tiles in spritesheet
