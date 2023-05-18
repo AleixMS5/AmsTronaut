@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import logoImg from '../assets/logo.png';
 import { PlayButton } from '../components/buttonStart';
 import gitHub from "../assets/github.png";
-
+import play from '../images/playbutton.png';
 
 export default class Portada extends Phaser.Scene
 {
@@ -16,7 +16,7 @@ export default class Portada extends Phaser.Scene
     {
         this.load.image('logo', logoImg);
         this.load.image('github', gitHub);
-        this.load.spritesheet('playbutton', '../images/playbutton.png', { frameWidth: 190, frameHeight: 49 });
+        this.load.spritesheet('playbutton', play, { frameWidth: 190, frameHeight: 49 });
 
     }
 
