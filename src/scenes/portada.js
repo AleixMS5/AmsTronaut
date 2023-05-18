@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import logoImg from '../assets/logo.png';
 import { PlayButton } from '../components/buttonStart';
 import gitHub from "../assets/github.png";
-import play from '../images/playbutton.png';
+import play from '../assets/playbutton.png';
 
 export default class Portada extends Phaser.Scene
 {
