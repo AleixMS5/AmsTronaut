@@ -16,7 +16,7 @@ export default class Portada extends Phaser.Scene
     {
         this.load.image('logo', logoImg);
         this.load.image('github', gitHub);
-        this.load.spritesheet('playbutton', './src/images/playbutton.png', { frameWidth: 190, frameHeight: 49 });
+        this.load.spritesheet('playbutton', '../images/playbutton.png', { frameWidth: 190, frameHeight: 49 });
 
     }
 
