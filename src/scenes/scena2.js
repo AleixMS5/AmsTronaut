@@ -13,6 +13,10 @@ let objetoPeligroso
 let perderVida
 let puerta
 let next
+let musica
+let sonido
+let sonidomorir
+let particleEmitter
 export default class Scena2 extends Phaser.Scene {
 
     constructor ()
@@ -21,6 +25,9 @@ export default class Scena2 extends Phaser.Scene {
 
     }
     preload () {
+        this.load.audio('sonido', './src/assets/curarse.mp3');
+        this.load.audio('sonidomorir', './src/assets/morirse.mp3');
+        this.load.audio('musica', './src/assets/iamsamelea-Aliens-in-Tokyo.mp3');
         // map made with Tiled in JSON format
         this.load.tilemapTiledJSON('map2', './src/assets/map2.json');
         // tiles in spritesheet
@@ -31,47 +38,92 @@ export default class Scena2 extends Phaser.Scene {
         this.load.image('puerta', './src/assets/puerta.png');
         // player animations
         this.load.atlas('player', './src/assets/player.png', './src/assets/player.json');
+        this.load.spritesheet('explosion', './src/assets/explosion.png', {frameWidth: 100, frameHeight: 150});
     }
 
 
      create() {
-
+         sonido = this.sound.add('sonido');
+         sonidomorir = this.sound.add('sonidomorir');
+         musica = this.sound.add('musica');
+         musica.play()
          puerta = this.physics.add.sprite(2050, 200, 'puerta');
          puerta.setCollideWorldBounds(true);
          puerta.setBounce(0.2); // our player will bounce from items
          puerta.body.setSize(puerta.width, puerta.height-8);
          next = () => {
-             this.scene.start('Scena2');
+             musica.stop()
+             this.scene.start('Victory');
          }
+
+         this.anims.create({
+             key: 'explosion',
+             frames: this.anims.generateFrameNumbers('explosion', { start: 0, end:  7 }),
+             frameRate: 10,
+             repeat: 0, // Repetir la animación solo una vez
+             hideOnComplete: true // Ocultar el sprite al completar la animación
+         });
          perderVida = () => {
-             // Desactiva la detección de colisiones temporalmente
-             player.setTint(0xff0000);
-             this.physics.pause();
+             if (player.y+50 < objetoPeligroso.y) {
+                 objetoPeligroso.disableBody(true, true);
+                 // Crear un nuevo sprite en la posición del enemigo para la explosión
+                 var explosion2 = this.add.sprite(objetoPeligroso.x, objetoPeligroso.y, 'explosion');
 
-             setTimeout(() => {
-                 player.clearTint();
-                 // Resta una vida y actualiza el texto
-                 vidas--;
-                 vidasText.setText('Vidas: ' + vidas);
+// Reproducir la animación de explosión en el sprite
+                 explosion2.play('explosion');
+             }else {
+                 // Desactiva la detección de colisiones temporalmente
+                 musica.stop()
+                 player.setTint(0xff0000);
+                 this.physics.pause();
+                 sonidomorir.play()
+                 var timeline = this.tweens.createTimeline();
 
-                 // Comprueba si el jugador todavía tiene vidas
-                 if (vidas > 0) {
-                     // Si todavía hay vidas, reinicia la escena
-                     this.scene.restart();
-                     score=0;
-                 } else {
-                     // Si no quedan vidas, muestra "Game Over" y desactiva el objeto peligroso
-                     vidasText.setText('GAME OVER');
+                 // Agrega dos tweens a la animación para sacudir la pantalla
+                 timeline.add({
+                     targets: this.cameras.main,
+                     x: '-=10',
+                     yoyo: true,
+                     duration: 5,
+                     ease: 'Power2',
+                     repeat: 4
+                 });
+                 timeline.add({
+                     targets: this.cameras.main,
+                     x: '+=10',
+                     yoyo: true,
+                     duration: 5,
+                     ease: 'Power2',
+                     repeat: 4
+                 });
 
-                     this.scene.start('GameOver');
-                     objetoPeligroso.disableBody(true, true);
-                 }
-
-                 // Reactiva la detección de colisiones después de un corto retraso
+                 // Inicia la animación de sacudida
+                 timeline.play();
                  setTimeout(() => {
-                     this.physics.resume();
+                     player.clearTint();
+                     // Resta una vida y actualiza el texto
+                     vidas--;
+                     vidasText.setText('Vidas: ' + vidas);
+
+                     // Comprueba si el jugador todavía tiene vidas
+                     if (vidas > 0) {
+                         // Si todavía hay vidas, reinicia la escena
+                         this.scene.restart();
+                         score = 0;
+                     } else {
+                         // Si no quedan vidas, muestra "Game Over" y desactiva el objeto peligroso
+                         vidasText.setText('GAME OVER');
+
+                         this.scene.start('GameOver');
+                         objetoPeligroso.disableBody(true, true);
+                     }
+
+                     // Reactiva la detección de colisiones después de un corto retraso
+                     setTimeout(() => {
+                         this.physics.resume();
+                     }, 1000);
                  }, 1000);
-             }, 1000);
+             }
          }
         // load the map
         map = this.make.tilemap({key: 'map2'});
@@ -95,7 +147,8 @@ export default class Scena2 extends Phaser.Scene {
          this.physics.world.bounds.height = groundLayer.height;
 
         // create the player sprite
-         objetoPeligroso =this.physics.add.sprite(1000, 300, 'enemy');
+         objetoPeligroso =this.physics.add.sprite(300, 300, 'enemy');
+         objetoPeligroso.body.setGravity(0, 0);
          objetoPeligroso.setCollideWorldBounds(true);
          objetoPeligroso.setBounce(0.2); // our player will bounce from items
          objetoPeligroso.body.setSize(objetoPeligroso.width, objetoPeligroso.height-8);
@@ -116,7 +169,7 @@ export default class Scena2 extends Phaser.Scene {
         // will be called
         this.physics.add.overlap(player, coinLayer);
          this.physics.add.overlap(player, objetoPeligroso, perderVida, null, this);
-         this.physics.add.overlap(player, puerta, perderVida, null, this);
+         this.physics.add.overlap(player, puerta, next, null, this);
         // player walk animation
         this.anims.create({
             key: 'walk',
@@ -156,6 +209,12 @@ export default class Scena2 extends Phaser.Scene {
         // fix the text to the camera
         text.setScrollFactor(0);
         vidasText.setScrollFactor(0);
+         particleEmitter = this.add.particles('coin').createEmitter({
+             speed: { min: -200, max: -100 }, // Velocidad negativa para moverse hacia arriba
+             gravityY: 200, // Gravedad hacia abajo para que la partícula se eleve
+             lifespan: 1000, // Duración de la vida de la partícula en milisegundos
+             // Otras opciones de visualización y comportamiento de la partícula
+         });
     }
 
 
@@ -163,6 +222,9 @@ export default class Scena2 extends Phaser.Scene {
         if (player.y > 600) {
             player.y= 500
             perderVida();
+        }
+        if (objetoPeligroso.y > 300) {
+            objetoPeligroso.body.setVelocityY(-200);
         }
         if (cursors.left.isDown)
         {
@@ -188,7 +250,17 @@ export default class Scena2 extends Phaser.Scene {
 
 }
 function collectCoin(sprite, tile) {
+    sonido.play();
     coinLayer.removeTileAt(tile.x, tile.y); // remove the tile/coin
+    // Obtener la posición actual del jugador
+    var jugadorX = player.x;
+    var jugadorY = player.y;
+    particleEmitter.setPosition(jugadorX, jugadorY);
+
+    // Iniciar emisión de partículas
+    particleEmitter.start();
+    // Establecer una duración de emisión de un segundo (1000 milisegundos)
+    this.time.delayedCall(100, detenerEmision, [], this);
     score++; // add 10 points to the score
     text.setText(score); // set the text to show the current score
     return false;
@@ -196,4 +268,8 @@ function collectCoin(sprite, tile) {
 
 
 
+function detenerEmision() {
+    // Detener la emisión de partículas
+    particleEmitter.stop();
+}
 

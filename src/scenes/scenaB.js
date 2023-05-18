@@ -19,6 +19,8 @@ let musica
 let invertedireccion
 let initialPosition
 let movingRight = true;
+var particleEmitter;
+let explosion
 export default class ScenaB extends Phaser.Scene {
 
     constructor ()
@@ -40,6 +42,7 @@ export default class ScenaB extends Phaser.Scene {
         this.load.image('puerta', './src/assets/puerta.png');
         // player animations
         this.load.atlas('player', './src/assets/player.png', './src/assets/player.json');
+        this.load.spritesheet('explosion', './src/assets/explosion.png', {frameWidth: 100, frameHeight: 150});
     }
 
 
@@ -58,9 +61,22 @@ export default class ScenaB extends Phaser.Scene {
              musica.stop()
              this.scene.start('Scena2');
          }
+
+         this.anims.create({
+             key: 'explosion',
+             frames: this.anims.generateFrameNumbers('explosion', { start: 0, end:  7 }),
+             frameRate: 10,
+             repeat: 0, // Repetir la animación solo una vez
+             hideOnComplete: true // Ocultar el sprite al completar la animación
+         });
          perderVida = () => {
              if (player.y+50 < objetoPeligroso.y) {
                  objetoPeligroso.disableBody(true, true);
+                 // Crear un nuevo sprite en la posición del enemigo para la explosión
+                 var explosion2 = this.add.sprite(objetoPeligroso.x, objetoPeligroso.y, 'explosion');
+
+// Reproducir la animación de explosión en el sprite
+                 explosion2.play('explosion');
              }else {
                  // Desactiva la detección de colisiones temporalmente
                  musica.stop()
@@ -202,6 +218,13 @@ export default class ScenaB extends Phaser.Scene {
         text.setScrollFactor(0);
          vidasText.setScrollFactor(0);
          initialPosition = objetoPeligroso.x;
+
+         particleEmitter = this.add.particles('coin').createEmitter({
+             speed: { min: -200, max: -100 }, // Velocidad negativa para moverse hacia arriba
+             gravityY: 200, // Gravedad hacia abajo para que la partícula se eleve
+             lifespan: 1000, // Duración de la vida de la partícula en milisegundos
+             // Otras opciones de visualización y comportamiento de la partícula
+         });
     }
 
 
@@ -242,18 +265,34 @@ export default class ScenaB extends Phaser.Scene {
         } else {
             movingRight = false;
         }
+
+
     }
 
 }
 function collectCoin(sprite, tile) {
     sonido.play();
-    coinLayer.removeTileAt(tile.x, tile.y); // remove the tile/coin
+    coinLayer.removeTileAt(tile.x, tile.y);
+    // remove the tile/coin
+    // Obtener la posición actual del jugador
+    var jugadorX = player.x;
+    var jugadorY = player.y;
+    particleEmitter.setPosition(jugadorX, jugadorY);
+
+    // Iniciar emisión de partículas
+    particleEmitter.start();
+    // Establecer una duración de emisión de un segundo (1000 milisegundos)
+    this.time.delayedCall(100, detenerEmision, [], this);
     score++; // add 10 points to the score
     text.setText(score); // set the text to show the current score
     return false;
 }
 
 
+function detenerEmision() {
+    // Detener la emisión de partículas
+    particleEmitter.stop();
+}
 
 
 

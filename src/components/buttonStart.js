@@ -7,7 +7,7 @@ export class PlayButton extends Button {
 
     doClick() {
 
-        this.relatedScene.scene.start('ScenaB',{score:1,vidas:3});
+        this.relatedScene.scene.start('ScenaB');
     }
 
 }
