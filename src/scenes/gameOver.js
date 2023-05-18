@@ -1,10 +1,10 @@
 import Phaser from 'phaser';
 
-import backGround from '../assets/img_1.png';
-import gitHub from '../assets/github.png';
-import gameover from '../assets/gameover.png';
+import backGround from 'assets/img_1.png';
+import gitHub from 'assets/github.png';
+import gameover from 'assets/gameover.png';
 
-import { relaoadButton } from '../components/buttonStart';
+import { relaoadButton } from 'components/buttonStart';
 
 export default class GameOver extends Phaser.Scene
 {
@@ -19,7 +19,7 @@ export default class GameOver extends Phaser.Scene
         this.load.image('back', backGround);
         this.load.image('over', gameover);
         this.load.image('github', gitHub);
-        this.load.spritesheet('playbutton', './src/images/playbutton.png', { frameWidth: 200, frameHeight: 49 });
+        this.load.spritesheet('playbutton', 'assets/playbutton.png', { frameWidth: 200, frameHeight: 49 });
 
     }
 

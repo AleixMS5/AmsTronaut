@@ -1,5 +1,5 @@
 import Phaser from 'phaser';
-import {config} from "../index";
+import {config} from "../index.js";
 
 let map;
 let player;
@@ -29,20 +29,20 @@ export default class ScenaB extends Phaser.Scene {
 
     }
     preload () {
-        this.load.audio('sonido', '../assets/curarse.mp3');
-        this.load.audio('sonidomorir', '../assets/morirse.mp3');
-        this.load.audio('musica', '../assets/iamsamelea-Aliens-in-Tokyo.mp3');
+        this.load.audio('sonido', 'assets/curarse.mp3');
+        this.load.audio('sonidomorir', 'assets/morirse.mp3');
+        this.load.audio('musica', 'assets/iamsamelea-Aliens-in-Tokyo.mp3');
         // map made with Tiled in JSON format
-        this.load.tilemapTiledJSON('map', '../assets/map.json');
+        this.load.tilemapTiledJSON('map', 'assets/map.json');
         // tiles in spritesheet
-        this.load.spritesheet('tiles', '../assets/tiles.png', {frameWidth: 70, frameHeight: 70});
+        this.load.spritesheet('tiles', 'assets/tiles.png', {frameWidth: 70, frameHeight: 70});
         // simple coin image
-        this.load.image('coin', '../assets/coinGold.png');
-        this.load.image('enemy', '../assets/img.png');
-        this.load.image('puerta', '../assets/puerta.png');
+        this.load.image('coin', 'assets/coinGold.png');
+        this.load.image('enemy', 'assets/img.png');
+        this.load.image('puerta', 'assets/puerta.png');
         // player animations
-        this.load.atlas('player', '../assets/player.png', '../assets/player.json');
-        this.load.spritesheet('explosion', '../assets/explosion.png', {frameWidth: 100, frameHeight: 150});
+        this.load.atlas('player', 'assets/player.png', 'assets/player.json');
+        this.load.spritesheet('explosion', 'assets/explosion.png', {frameWidth: 100, frameHeight: 150});
     }
 
 
